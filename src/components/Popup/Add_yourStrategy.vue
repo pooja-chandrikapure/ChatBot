@@ -37,12 +37,26 @@
         placeholder="Enter Capital_required"
       />
       <label class="text-lg font-semibold mb-3">Status</label>
-      <input
+      <!-- Toggle -->
+      <div
+        @click="toggleStatus"
+        class="w-11 h-6 rounded-full cursor-pointer transition-colors relative"
+        :class="form.status === 1 ? 'bg-blue-600' : 'bg-gray-300'"
+      >
+        <div
+          class="absolute top-[2px] h-5 w-5 bg-white rounded-full transition-all"
+          :class="form.status === 1 ? 'left-[22px]' : 'left-[2px]'"
+        ></div>
+      </div>
+      <span class="text-sm font-medium text-gray-700">
+      {{ form.status === 1 ? 'Active' : 'Inactive' }}
+    </span>
+      <!-- <input
         type="text"
         v-model="form.status"
         class="border w-full px-3 py-2 rounded mb-4 mt-2"
         placeholder="Enter Status"
-      />
+      /> -->
       <!-- <label class="text-lg font-semibold mb-3">Published</label>
       <input
         type="text"
@@ -72,6 +86,9 @@ const your_strategy = getYourStrategy();
 const yourStrategy = getYourStrategy();
 // const mode = ref('add'); //add|edit;
 const selectedStrategy = ref(null);
+const toggleStatus = () => {
+  form.value.status = form.value.status === 1 ? 0 : 1;
+}
 
 const emit = defineEmits(["close", "submit"]);
 const props = defineProps({

@@ -6,8 +6,17 @@
                 This is your Strategy page content.
             </p>
             <!-- add strategy Button -->
-             <span class="flex justify-end mb-4">
+             <!-- <span class="flex justify-end mb-4"> -->
              <!-- <router-link to ="/your_strategy_add"> -->
+              <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+                <!-- SEARCH -->
+                <input
+                  type="text"
+                  placeholder="Search strategy name..."
+                  class="w-full md:w-64 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  v-model="searchText"
+                  @input="onSearch"
+                />
                 <button 
                    
                     class="w-full md:w-auto px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors
@@ -16,10 +25,9 @@
                 >
                     Add Strategy
                 </button>
-                
-                <!-- </router-link> -->
+              </div>
           
-            </span>
+            <!-- </span> -->
             <div class="overflow-x-auto ">
                 <div class="min-w-[100px]">
                 <ag-grid-vue
@@ -30,6 +38,7 @@
                     :defaultColDef="defaultColDef"
                     :pagination="true"
                     :paginationPageSize="10"
+                    @grid-ready="onGridReady"
                 />
                 </div>
             </div>
@@ -95,6 +104,10 @@ const showOtpModal = ref(false)
 // const deleteTarget = ref(null);
 const mode = ref('add'); //add|edit
 const selectedStrategy = ref(null);
+const searchText = ref('');
+const gridApi = ref(null);
+
+
 const isMobile = window.innerWidth < 768;
 const addStrategy = () => {
     mode.value = 'add';
@@ -207,22 +220,24 @@ const columnDefs = ref([
     const knob = document.createElement('div');
     knob.className = `
       absolute top-[2px] h-5 w-5 bg-white rounded-full transition-all
-      ${Number(params.value) === 1 ? 'left-[22px]' : 'left-[2px]'}
+      ${Number(params.data.status) === 1 ? 'left-[22px]' : 'left-[2px]'}
     `;
 
     toggle.appendChild(knob);
 
     toggle.onclick = async () => {
-      const newValue = Number(params.value) === 1 ? 0 : 1;
+      const oldValue = Number(params.data.status);
+      const newValue = oldValue === 1 ? 0 : 1;
 
       // optimistic UI
       params.node.setDataValue('status', newValue);
 
       try {
-        await yourStrategy.toggleStatus(params.data.id, newValue);
+        await yourStrategy.toggleSatuts(params.data.id, newValue);
       } catch (err) {
+        console .error('status toggle failed', err);
         // rollback
-        params.node.setDataValue('status', params.value);
+        params.node.setDataValue('status', oldValue);
       }
     };
 
@@ -238,59 +253,40 @@ const columnDefs = ref([
         cellRenderer: (params) => {
             // if (!params.data) return '';
           const button = document.createElement('button')
-          // const status = Number(params.data.status);
-          const isPublished = Number(params.data.published);
-          // const isBlue = status === 1 && published === 1;
-          button.innerText = isPublished ? 'Published' : 'Unpublish'
-
-          button.className = `
+          const setButtonState = (value) => {
+            button.textContent = value === 1 ? 'Published' : 'Unpublished';
+            button.className = `
             px-3 py-1 text-sm rounded
-            ${
-            isPublished
+            ${value === 1
               ? 'bg-blue-600 text-white cursor-default' 
-              : 'bg-gray-400 text-black hover:bg-gray-500'}
-          `
+              : 'bg-gray-400 text-black hover:bg-gray-500'}`;
+           
+          };
 
-          button.disabled = isPublished;
-          button.onclick = () => {
-            if (isPublished) return;
+          // initial state
+          setButtonState(params.data.published);
 
-            //optimistic update
-            params.node.setDataValue('published', 1);
+          button.onclick = async () => {
+            const oldValue = Number(params.data.published);
+            const newValue = oldValue === 1 ? 0 : 1;
+
+            // optimistic UI
+            params.node.setDataValue('published', newValue);
+            setButtonState(newValue);
 
             try {
-              const res = yourStrategy.togglePublish(params.data.id, 1);
-              params.node.setDataValue('published', res.dta.published_at);
-              params.node.setDataValue('status', res.data.status); 
-
+              await yourStrategy.togglePublish(params.data.id, newValue);
             } catch (err) {
-              params.node.setDataValue('published', 0);
+              console .error('Publish toggle failed', err);
+              // rollback
+              params.node.setDataValue('published', oldValue);
+              setButtonState(oldValue);
             }
           };
           return button;
-
-          // button.addEventListener('click', async () => {
-          //     if(isBlue) return;
-
-              // try {
-              //     const res = await yourStrategy.togglePublish(
-              //         params.data.id,
-              //         1
-              //     );
-
-              //     //force Grid update
-              //     params.node.setData({
-              //         ...params.data,
-              //         published: res.published,
-              //         status: res.status,
-              //     });
-              // } catch (err) {
-              //     console.error('publish failed', err)
-              // }
-              // });
-             
-        },
-},
+   
+        }
+      },
     { 
         headerName: 'Actions', field: 'Actions', 
         sortable: false, filter: false , minWidth: 150,
@@ -345,6 +341,13 @@ async function fetchStrategyData() {
 //     { Nsame: 'Strategy A', Descriotion: 'Description for Strategy A', Public: 'Yes', 'owner Name': 'Alice', 'Capital required': '$1000', Publish: '2023-01-01', Actions: 'Edit/Delete' },
 //     { Name: 'Strategy B', Descriotion: 'Description for Strategy B', Public: 'No', 'owner Name': 'Bob', 'Capital required': '$2000', Publish: '2023-02-01', Actions: 'Edit/Delete' }
 // ])
+const onGridReady = (params) => {
+  gridApi.value = params.api;
+}
+const onSearch = () => {
+  if(!gridApi.value) return;
+  gridApi.value.setQuickFilter(searchText.value);
+}
 
 const defaultColDef = {
   sortable: true,

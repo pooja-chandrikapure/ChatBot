@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { signupApi, loginApi, sendOtpApi, verifyOtpApi } from '../services/auth_services'
+import { signupApi, loginApi, sendOtpApi, verifyOtpApi, getProfileApi } from '../services/auth_services'
 import socket from '../services/socket';
 // import Toast from '../components/toast.vue';
 import { useToastStore } from './toast';
@@ -11,12 +11,16 @@ export const useAuthStore = defineStore('auth', {
     user: JSON.parse(localStorage.getItem('user')) || null,
     token: localStorage.getItem('token') || null,
     isAuthenticated: !!localStorage.getItem('token'),
+    profile: null,
     otpSent: false,
     otpVerified: false,
     loading: false,
     error: false,
     userNotFoundMessage: "",
   }),
+  getters: {
+    isAuthenticated: (state) => !!state.token,
+  },
 
   actions: {
     // compareAuthentication() {
@@ -123,37 +127,22 @@ export const useAuthStore = defineStore('auth', {
         localStorage.setItem('user', JSON.stringify(user))
       }
     },
-    // async login(payload) {
-    //   this.loading = true;
-    //   try {
-    //     // this.loading = true;
-    //     const res = await loginApi(payload)
-
-    //     this.user = res.data.data.user
-
-    //     this.token = res.data.data.token;
-    //     this.isAuthenticated = true;
-    //     console.log('login response', res.data.data.token)
-    //     this.error = false;
-
-    //     localStorage.setItem('token', this.token)
-    //     localStorage.setItem('user', JSON.stringify(this.user));
-    //     socket.connect();
-    // } catch (error) {
-    //   console.log('Login Error in Store:', error);
-    //   this.error = true;
-    //   const toast = useToastStore();
-    //   if (error.response) {
-    //     toast.error(error.response.data.message || 'Invalid login credentials');
-    //   }else {
-    //     toast.error('Network Errorr')
-    //   }
-      
-    //   return { success: false }
-    // } finally {
-    //   this.loading = false;
-    // }
-    // },
+    async fetchProfile() {
+      try {
+        const res = await getProfileApi();
+        if(res.data.status === "success") {
+          this.profile = res.data.data;
+          this.message = res .data.message;
+          
+        }
+       
+      } catch (err) {
+        this.error = err.response?.data?.message || 'Failed to fetch profile';
+        console.error('Error fetching profile:', err);
+      } finally {
+        this.loading = false;
+      }
+    },
 
     logout() {
       this.user = null;

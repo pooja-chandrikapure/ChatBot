@@ -1,7 +1,7 @@
 <template>
   <div class="h-full flex flex-col">
     <!-- Header -->
-    <div class="p-4 border-b font-semibold text-lg">
+    <div class="p-4 border-b font-extrabold text-xl">
       Chats
     </div>
 
@@ -56,23 +56,25 @@
 <script setup>
 import { onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
+import { useChatStore } from '../../stores/chat';
 import { useTestChatStore } from '../../stores/chatList';
 
 const chatStore = useTestChatStore()
+const chatSocketStore = useChatStore();
 const { chats } = storeToRefs(chatStore)
 const emit = defineEmits(['open-chat'])
 onMounted(async() => {
     await chatStore.fetchChats();
-    // chats.value.forEach(chat => {
-    //   chatStore.getUnreadCountApiStore(chat.chat_id);
-    // })
-    await chatStore.getUnreadCountApiStore();
+    await chatStore.fetchUnreadCounts();
+    // await chatStore.getUnreadCountApiStore();
 })
 
 const onChatClick = (chat) => {
   // chatStore.openChat(chat);
-  emit('open-chat', chat);
+  chatSocketStore.initChat({ chat_id: chat.chat_id, role: "user"});
   chatStore.markAsReadApiStore(chat.chat_id);
+  emit('open-chat', chat);
+  // chatStore.markAsReadApiStore(chat.chat_id);
 }
 
 const formatTime = (dateStr) => {

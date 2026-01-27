@@ -1,12 +1,12 @@
 <template>
   <div class="flex flex-col h-full bg-gray-50">
     <!-- Header -->
-    <div class="p-4 border-b bg-green-100 flex items-center gap-3">
+    <div class="p-4 border-b bg-gray-100 flex items-center gap-3">
       <div class="w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center font-bold">
         {{ chat.strategy_name.slice(0,1) }}
-        <div class="p-4 bg-black border-b font-semibold">
+        <!-- <div class="p-4 bg-black border-b font-semibold">
         {{ chat.chat_id }}
-      </div>
+      </div> -->
       </div>
       <div>
         <p class="font-semibold">{{ chat.creator_name }}</p>
@@ -15,22 +15,23 @@
     </div>
 
     <!-- Messages (dummy for now) -->
-    <div class="flex-1 p-4 overflow-y-auto space-y-2 bg-green-100">
-      <div class="self-start bg-white p-2 rounded shadow text-sm">
+    <div class="flex-1 p-4 overflow-y-auto space-y-2 bg-gray-100">
+      <!-- <div class="self-end bg-white p-2 rounded shadow text-sm ">
         {{ chat.last_message }}
-      </div>
+      </div> -->
+      <!-- {{authStore}} -->
       <div
       v-for="msg in messages"
       :key="msg.message_id"
-      class ="flex"
-      :class="msg.sender_id === authStore.user?.id ? 'justtify-end' :'justify-start'"
+      class ="flex mb-1"
+      :class="Number(msg.sender_id) == currentUserId ? 'justify-end' :'justify-start'"
       >
       <div
-      class="max-w-xs px-3 py-2 rounded-lg text-sm break-words"
-      :class="msg.sender_id === authStore.user?.id
-      ? 'bg-blue-500 text-white rounded-br-none'
+      class="max-w-xs px-3 py-2 rounded-lg text-sm break-words "
+      :class="Number(msg.sender_id) === Number(authStore.user?.id)
+      ? 'bg-green-500 text-white rounded-br-none'
       : 'bg-white text-black rounded-bl-none'">
-      {{ msg.content }}
+      {{ msg.content }} 
       </div>
       </div>
     </div>
@@ -57,6 +58,7 @@ import { storeToRefs } from 'pinia';
 import { useTestChatStore } from '../../stores/chatList';
 import { useChatStore } from '../../stores/chat';
 import { useAuthStore } from '../../stores/auth';
+import { computed } from 'vue';
 import socket from '../../services/socket';
 // import socket from '../../services/socket';
 
@@ -76,6 +78,7 @@ const messageText = ref('')
 const loading = ref(false);
 const chatId = 5;
 const role = "user"; //or "creator"
+const currentUserId = computed(() => Number(authStore.profile?.id));
 
 onMounted(() => {
   socketStore.initChat({ chat_id: chatId, role: "user"}); //role: props.chat.role

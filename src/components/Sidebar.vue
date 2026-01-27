@@ -49,11 +49,11 @@
     <!-- Footer -->
     <div class="px-4 py-4 border-t border-gray-700 flex items-center gap-3">
       <div class="h-10 w-10 rounded-full bg-green-600 flex items-center justify-center font-bold">
-        A
+        {{ profile?.name.slice(0, 1) }}
       </div>
 
       <div class="flex-1">
-        <p class="text-sm font-semibold">Admin</p>
+        <p class="text-sm font-semibold">{{ profile?.name }}</p>
         <button @click="logout" class="text-xs text-red-400 hover:text-red-300">
           Logout
         </button>
@@ -66,11 +66,20 @@
 import { ref } from "vue";
 import { useAuthStore } from "../stores/auth";
 import { useRouter } from "vue-router";
+import { onMounted } from "vue";
+import { storeToRefs } from "pinia";
+
+const profileStore = useAuthStore();
+const { profile, loading, error, message } = storeToRefs(profileStore);
 
 const isOpen = ref(false);
 
 const authStore = useAuthStore();
 const router = useRouter();
+
+onMounted(() => {
+  profileStore.fetchProfile();
+})
 
 const closeMobile = () => {
   if (window.innerWidth < 768) {

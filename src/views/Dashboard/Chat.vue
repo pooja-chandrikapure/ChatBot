@@ -32,46 +32,54 @@
 
     <!-- Chat List -->
     <div v-else>
-      <div
+      <!-- <div
         v-for="chat in chats"
         :key="chat.chat_id"
         class="border rounded p-3 mb-2 hover:bg-gray-50 cursor-pointer"
         @click="openChat(chat)"
       >
-        <div class="flex justify-between">
-          <div>
-            <p class="font-medium">
-              Strategy ID: {{ chat.strategy_id }}
-            </p>
-            <p class="text-sm text-gray-600 truncate">
-              <!-- {{ chat.last_message || 'No messages yet' }} -->
-            </p>
-          </div>
-
-          <span class="text-xs text-gray-400">
-            <!-- {{ formatDate(chat.updated_at) }} -->chat
-          </span>
-        </div>
-      </div>
+      </div> -->
     </div>
   <!-- </div> -->
 </template>
 <script setup>
 
-import { onMounted } from 'vue';
+import { onMounted, watch } from 'vue';
 
 import { storeToRefs } from 'pinia';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { ref } from 'vue';
 import ChatList from './ChatList.vue';
 import ChatBox from './ChatBox.vue';
-
+import { useTestChatStore } from '../../stores/chatList';
+const route = useRoute();
+const chatStore = useTestChatStore()
+const { chats , loading, error } = storeToRefs(chatStore)
 const activeChat = ref(null)
 
 const openChat = (chat) => {
   activeChat.value = chat
 }
+// const openChatById = async (chatId) => {
+//   if(!chatId) return
+//   // const chat = chats.value.find(chat => chat.chat_id === chatId);
+//   if (!chatStore.chats || !chatStore.chatslength) {
+//     await chatStore.fetchChats();
+//   }
+//   const foundChat = chatStore.chats.find(c => String(c.chat_id) === String(chatId));
+//   if (foundChat) {
+//     activeChat.value = foundChat;
+//   }
+  
+// }
 
+// onMounted(() => {
+//   openChatById(route.params.chatId);
+// })
+// watch(
+//   () => route.params.chatId,
+//   (newId) => openChatById(newId)
+// )
 const router = useRouter();
 
 

@@ -23,7 +23,10 @@ export const useTestChatStore = defineStore('testchats', {
             try {
                 const res = await getChatListApi()
 
-                this.chats = res.data.data;
+                this.chats = res.data.data.map(chat => ({
+                    ...chat,
+                    unread_count: 0 ///chnages
+                }));
             } catch (err) {
                 this.error = err.response?.data?.message || 'Failad to Load the Chat'
             } finally {
@@ -118,21 +121,33 @@ export const useTestChatStore = defineStore('testchats', {
         },
 
         //unread count
-        async getUnreadCountApiStore(chat_id) {
+        async fetchUnreadCounts() {
             try {
-                const count = await getUnreadCountApi(chat_id);
-                const chat = this.chats.find(c => c.chat_id === chat_id);
-                if (chat) {
-                    chat.unread_count = count;
-                }
-                // return response.data.data.unread_count;
-            } catch (error) {
+                const unreadList = await getUnreadCountApi(); ///changes
+                unreadList.forEach(item => {
+                    const chat = this.chats.find(c => c.chat_id === item.chat_id);
+                    if (chat) {
+                        chat.unread_count = item.unread_count;
+                    }
+
+                });
+            } 
+            catch (error) {
                 console.error('Unread Count API Error:', error);
-                throw {
-                    status: error.response?.status,
-                    message: error.response?.data?.message || 'Failed to fetch unread count',
-                };
             }
+                // const chat = this.chats.find(c => c.chat_id === chat_id);
+                // if (chat) {
+                //     chat.unread_count = count;
+                // }
+                // return response.data.data.unread_count;
+            // } 
+            // catch (error) {
+            //     console.error('Unread Count API Error:', error);
+            //     throw {
+            //         status: error.response?.status,
+            //         message: error.response?.data?.message || 'Failed to fetch unread count',
+            //     };
+            // }
         },
         async markAsReadApiStore(chat_id) {
             try {

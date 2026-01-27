@@ -64,4 +64,18 @@ export const loginApi = async (payload) => {
 
 }
 
+/* get profile  */
+export const getProfileApi = async () => {
+  try {
+    const response = await api.get('/chat/profile')
+    return response
+  } catch (error) {
+    console.error('Get Profile API Error:', error)
+    throw {
+      status: error.response?.status,
+      message: error.response?.data?.message || 'Get Profile failed',
+    }
+  }
+}
+
 

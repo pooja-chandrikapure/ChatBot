@@ -1,9 +1,7 @@
 <template>
-  <div>
-    <h1 class="text-2xl font-semibold bg-[#111827] text-white p-2 rounded-md">Dashboard</h1>
-
-    <div class="bg-white rounded-lg shadow p-6">
-      <p class="text-gray-700">
+  <div class="p-4 md:p-6">
+    <div class="bg-white rounded-lg shadow p-4 md:p-6 lg:p-8">
+      <p class="text-sm md:text-base lg:text-lg text-gray-700">
         Welcome to your dashboard 🎉
       </p>
     </div>

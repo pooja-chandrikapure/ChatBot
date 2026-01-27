@@ -8,22 +8,11 @@ import Strategy from '../views/Dashboard/Strategy.vue';
 import Your_strategy from '../views/Dashboard/Your_strategy.vue';
 import Public_strategy from '../views/Dashboard/Public_strategy.vue';
 import Your_strategyAdd from '../views/Dashboard/Your_strategyAdd.vue';
-// import { useAuthStore } from '../stores/auth';
+import { useAuthStore } from '../stores/auth';
 import ChatBox from '../views/Dashboard/ChatBox.vue';
 import ChatList from '../views/Dashboard/ChatList.vue';
 // import { authStore } from '../stores/auth';
 
-// router.beforeEach((to, from, next) => {
-//   const auth = useAuthStore()
-
-//   if (to.meta.requiresAuth && !auth.isAuthenticated) {
-//     next('/login')   // 🚫 not logged in → redirect
-//   } else if (to.path === '/login' && auth.isAuthenticated) {
-//     next('/')        // 🔁 already logged in → dashboard
-//   } else {
-//     next()
-//   }
-// })
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -46,7 +35,7 @@ const router = createRouter({
           component: Home,
         },
         {
-          path: 'chat',    
+          path: 'chat/:chatId?',    
           name: 'Chat',
           component: Chat,
         },
@@ -77,6 +66,18 @@ const router = createRouter({
     },
     
   ],
+})
+// ✅ THEN add navigation guard
+router.beforeEach((to, from, next) => {
+  const auth = useAuthStore()
+
+  if (to.meta.requiresAuth && !auth.isAuthenticated) {
+    next('/login')
+  } else if (to.path === '/login' && auth.isAuthenticated) {
+    next('/')
+  } else {
+    next()
+  }
 })
 
 export default router;

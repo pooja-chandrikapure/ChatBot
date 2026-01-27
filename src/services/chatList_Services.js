@@ -52,7 +52,7 @@ export const markAsReadApi = async (chat_id) => {
 export const getUnreadCountApi = async () => {
   try {
     const response = await api.get(`/chat/all-unread-counts`);
-    return response.data.data.unread_count;
+    return response.data.data;/////changes
   } catch (error) {
     console.error('Unread Count API Error:', error);
     throw {
