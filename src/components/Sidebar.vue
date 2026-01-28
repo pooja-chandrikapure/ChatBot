@@ -1,6 +1,7 @@
 <template>
   <!-- Mobile top bar (hamburger) -->
-  <div class="md:hidden fixed top-0 left-0 right-0 z-50 bg-gray-900 text-white flex items-center px-4 py-3">
+  <div class="md:hidden fixed top-0 left-0 right-0 z-50 bg-gray-900 text-white flex items-center px-4 py-3
+  ">
     <button @click="isOpen = true" class="text-2xl">
       ☰
     </button>
@@ -10,14 +11,14 @@
   <!-- Overlay (mobile only) -->
   <div
     v-if="isOpen"
-    class="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+    class="fixed inset-0 bg-opacity-50 z-40 md:hidden"
     @click="isOpen = false"
   ></div>
 
   <!-- Sidebar -->
   <aside
-    class="fixed md:static top-0 left-0 z-50 h-screen w-64 bg-gray-900 text-white flex flex-col
-           transform transition-transform duration-300
+    class="fixed md:static top-0 left-0 z-50 h-[100dvh] lg:h-[140vh] w-64 bg-gray-900 text-white flex flex-col
+           transform transition-transform duration-300 ease-in-out md:h-[full] sm:h-[full]
            md:translate-x-0"
     :class="isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'"
   >
@@ -28,7 +29,7 @@
     </div>
 
     <!-- Navigation -->
-    <nav class="flex-1 px-4 py-6 space-y-2 text-lg font-semibold overflow-y-auto">
+    <nav class="flex-1 px-4 py-6 md:px-4 md:py-6  space-y-6 text-lg font-bold overflow-y-auto">
       <router-link to="/home" class="nav-item" @click="closeMobile">
         Dashboard
       </router-link>
@@ -48,7 +49,7 @@
 
     <!-- Footer -->
     <div class="px-4 py-4 border-t border-gray-700 flex items-center gap-3">
-      <div class="h-10 w-10 rounded-full bg-green-600 flex items-center justify-center font-bold">
+      <div class="px-4 py-4 h-10 w-10 rounded-full bg-green-600 flex items-center justify-center font-bold">
         {{ profile?.name.slice(0, 1) }}
       </div>
 
@@ -102,12 +103,12 @@ const logout = () => {
 }
 
 .nav-item:hover {
-  background-color: #374151;
-  color: white;
+  background-color: rgb(157, 201, 157);
+  color: black;
 }
 
 .router-link-active {
   background-color: #111827;
-  color: white;
+  color: rgb(157, 201, 157);
 }
 </style>
