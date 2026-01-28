@@ -99,6 +99,13 @@ class SocketService {
     this.emit("leave_chat", { chat_id });
   }
 
+  startTyping(chat_id) {
+    this.emit("typing", { chat_id });
+  }
+  stopTyping(chat_id) {
+    this.emit("stop_typing", { chat_id });
+  }
+
   disconnect(){
     if (this.socket) {
       this.socket.disconnect();
