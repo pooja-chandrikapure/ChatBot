@@ -1,20 +1,22 @@
 <template>
-  <div class="h-full flex flex-col">
+  <div class="h-[100vh] sm:h-full flex flex-col bg-white">
     <!-- Header -->
-    <div class="p-4 border-b font-extrabold text-xl">
+    <div class="p-4.5 sm:p-4 border-b font-extrabold text-xl shrink-0">
       Chats
     </div>
 
     <!-- Chat list -->
-    <div class="flex-1 overflow-y-auto">
+    <div class="flex-1 overflow-y-auto h-[120vh]">
       <div
         v-for="chat in chats"
         :key="chat.chat_id"
         @click= "onChatClick(chat)"
-        class="flex items-center gap-3 p-3 cursor-pointer hover:bg-gray-100"
+        class="flex items-center gap-3 p-3 sm:p-4 cursor-pointer hover:bg-gray-100 
+        active:bg-gray-200 transition-colors duration-200 ease-in-out"
       >
         <!-- Avatar -->
-        <div class="w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center font-bold uppercase">
+        <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-green-500 text-white 
+        flex items-center justify-center font-bold uppercase shrink-0">
           {{ chat.strategy_name.slice(0,1) }}
           <!-- {{ chat.creator_name }} -->
         </div>
@@ -22,17 +24,17 @@
         <!-- Chat info -->
         <div class="flex-1 min-w-0  ">
           <div class="flex justify-between ">
-            <div class="flex justify-between grid grid-cols-1">
-            <p class="font-bold truncate text-lg">
+            <div class="min-w-0">
+            <p class="font-bold truncate text-lg text-base sm:text-lg">
               {{ chat.strategy_name }}
             </p>
             <!-- <div class="flex justify-between"> -->
-            <p class="text-sm truncate">
+            <p class="text-sm truncate text-gray-600">
               {{ chat.creator_name }}
             </p>
             </div>
             <!-- <span class="">{{ chat.creator_name }}</span> -->
-            <div class="flex flex-col items-end gap-1">
+            <div class="flex flex-col items-end gap-1 shrink-0">
             <span class="text-xs text-gray-400">
               {{ formatTime(chat.updated_at) }}
             </span>
@@ -45,7 +47,7 @@
             </div>
           </div>
 
-          <p class="text-sm text-gray-600 truncate">
+          <p class="text-sm text-gray-600 truncate mt-1">
             {{ chat.last_message || 'No messages yet' }}
           </p>
         </div>
