@@ -216,7 +216,7 @@ const openOtpPopup = async () => {
    
   try {
     await authStore.sendOtp(form.email)
-    toast.success(res.data.message)
+    toast.success('OTP sent to your email')
     console.log('OTP sent to:', form.email)
     console.log('jbhg', authStore.sendOtp)
     alert('OTP sent to your email')
