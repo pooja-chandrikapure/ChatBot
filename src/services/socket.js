@@ -47,40 +47,7 @@ class SocketService {
     this.socket.on("disconnect", () => {
         console.log("Socket disconnected");
       });
-    
-    // if (!this.socket) {
-    //   this.socket = io("https://16qldnx9-5000.inc1.devtunnels.ms", {
-    //     transports: ["websocket"],
-    //     query: {
-    //       token: token
-          
-    //     },
-    //     auth: {
-    //       token: token
-    //     },
-    //     reconnection: true,
-    //     reconnectionAttempts: 5,
-    //     autoConnect: true,
-    //   });
-
-    //   this.socket.on("connect", () => {
-    //     console.log("Socket connected:", this.socket.id);
-    //   });
-
-    //   this.socket.on('new_message' , (message) => {
-    //     console.log(message)
-        
-    //   })
-
-    //   this.socket.on("connect_error", (err) => {
-    //     console.log("Connection error:", this.socket);
-    //     console.error("Socket connection error:", err);
-    //   });
-
-    //   this.socket.on("disconnect", () => {
-    //     console.log("Socket disconnected");
-    //   });
-    // }
+      
   }
   emit(event, data){
     this.socket?.emit(event, data);
@@ -99,12 +66,12 @@ class SocketService {
     this.emit("leave_chat", { chat_id });
   }
 
-  startTyping(chat_id) {
-    this.emit("typing", { chat_id });
-  }
-  stopTyping(chat_id) {
-    this.emit("stop_typing", { chat_id });
-  }
+  // startTyping(chat_id) {
+  //   this.emit("typing", { chat_id });
+  // }
+  // stopTyping(chat_id) {
+  //   this.emit("stop_typing", { chat_id });
+  // }
 
   disconnect(){
     if (this.socket) {
