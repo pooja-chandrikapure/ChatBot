@@ -50,31 +50,6 @@ export const useTestChatStore = defineStore('testchats', {
             }
         },
 
-        /*INit scoket */
-
-        initSockect(userId) {
-            if (this.socket) return;
-
-            this.socket = io(import.meta.env.VITE_SOCKET_URL, {
-                auth:{
-                    token: localStorage.getItem("token"),
-                },
-                query:{
-                    token: localStorage.getItem("token"),
-                },
-            });
-
-            
-
-            // this.socket.emit("join", { room: `user_${userId}`});
-            this.socket.on("new_message", (message) => {
-                console.log('messageeeeeeeeeeee' , message)
-                if (message.chat_id === this.activeChatId) {
-                    this.messages.push(message);
-                }
-            });
-        },
-
         /* */
         async sendMessage(chat_id, content, receiver_id ) {
             if(!content.trim()) return;
@@ -87,7 +62,7 @@ export const useTestChatStore = defineStore('testchats', {
                 }
                 const res = await sendChatMessageApi(chat_id , payload)
                 console.log("payload", payload)
-                this.messages.push(res.data.data)
+                // this.messages.push(res.data.data)
                 // this.messageChat = res.data.data
                 return this.messageChat
                 // await sendChatMessageApi(chatId, { 
@@ -135,19 +110,7 @@ export const useTestChatStore = defineStore('testchats', {
             catch (error) {
                 console.error('Unread Count API Error:', error);
             }
-                // const chat = this.chats.find(c => c.chat_id === chat_id);
-                // if (chat) {
-                //     chat.unread_count = count;
-                // }
-                // return response.data.data.unread_count;
-            // } 
-            // catch (error) {
-            //     console.error('Unread Count API Error:', error);
-            //     throw {
-            //         status: error.response?.status,
-            //         message: error.response?.data?.message || 'Failed to fetch unread count',
-            //     };
-            // }
+
         },
         async markAsReadApiStore(chat_id) {
             try {
