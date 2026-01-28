@@ -1,7 +1,13 @@
 <template>
-  <div class="flex flex-col h-full bg-gray-50">
+  <div class="flex flex-col h-[100dvh] bg-gray-50">
     <!-- Header -->
-    <div class="p-4 border-b bg-gray-100 flex items-center gap-3">
+    <div class="p-2 sm:p-1.5 border-b bg-white flex items-center gap-3 shrink-0">
+      <button
+        class="md:hidden mr-2 text-gray-600"
+        @click="$emit('back')"
+      >
+        ←
+      </button>
       <div class="w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center font-bold">
         {{ chat.strategy_name.slice(0,1) }}
         <!-- <div class="p-4 bg-black border-b font-semibold">
@@ -9,13 +15,15 @@
       </div> -->
       </div>
       <div>
-        <p class="font-semibold">{{ chat.creator_name }}</p>
+        <p class="font-bold">{{ chat.strategy_name }}</p>
+        <p class="font-normal">{{ chat.creator_name }}</p>
         <!-- <p class="text-xs text-gray-500">Chat ID {{ chat.chat_id }}</p> -->
       </div>
     </div>
 
     <!-- Messages (dummy for now) -->
-    <div class="flex-1 p-4 overflow-y-auto space-y-2 bg-gray-100">
+    <div ref="chatBody"
+    class="flex-1 p-2 sm:p-4 overflow-y-auto space-y-2 bg-white">
       <!-- <div class="self-end bg-white p-2 rounded shadow text-sm ">
         {{ chat.last_message }}
       </div> -->
@@ -23,30 +31,34 @@
       <div
       v-for="msg in messages"
       :key="msg.message_id"
-      class ="flex mb-1"
+      class ="flex"
       :class="Number(msg.sender_id) == currentUserId ? 'justify-end' :'justify-start'"
       >
+      <!-- <p class="text-xs text-red-500">
+      sender: {{ msg.sender_id }} | me: {{ currentUserId }}
+    </p> -->
       <div
-      class="max-w-xs px-3 py-2 rounded-lg text-sm break-words "
-      :class="Number(msg.sender_id) === Number(authStore.user?.id)
+      class="max-w-[80%] sm:max-w-xs px-3 py-2 rounded-lg text-sm break-words shadow "
+      :class="Number(msg.sender_id) === currentUserId
       ? 'bg-green-500 text-white rounded-br-none'
-      : 'bg-white text-black rounded-bl-none'">
+      : 'bg-gray-200 text-black rounded-bl-none'">
       {{ msg.content }} 
       </div>
       </div>
     </div>
 
     <!-- Input box -->
-    <div class="p-3 border-t bg-white flex gap-2">
+    <div class="p-2 sm:p-3 border-t bg-white flex gap-2 item-center shrink-0">
       <input
         type="text"
         v-model="messageText"
         placeholder="Type a message"
-        class="flex-1 border rounded-full px-4 py-2 focus:outline-none"
+        class="flex-1 border rounded-full px-4 py-2 
+        focus:outline-none focus:ring-1 focus:ring-blue-400"
       />
       <button
       @click="handleSend"
-      class="bg-green-500 text-white px-4 rounded-full">
+      class="bg-green-500 text-white px-4 py-2 rounded-full">
         Send
       </button>
     </div>
@@ -88,10 +100,11 @@ onUnmounted(() => {
   socketStore.leaveChat();
   // socketStore.disconnSocket();
 });
+const chatBody = ref(null);
+
 const scrollToBottom = () => {
-  const el = document.querySelector(".overflow-y-auto");
-  if (el) {
-    el.scrollTop = el.scrollHeight;
+  if (chatBody.value) {
+    chatBody.value.scrollTop = chatBody.value.scrollHeight;
   }
 };
 // onUnmounted(() => {
@@ -101,6 +114,7 @@ const scrollToBottom = () => {
 watch(lastMessage , () => {
   if(lastMessage.value != null)
 {
+  console.log('lastmessgae', lastMessage.value)
   messages.value.push(lastMessage.value)
 }
 })
