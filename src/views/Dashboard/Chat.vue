@@ -1,22 +1,24 @@
 <template>
   <!-- <div class="p-4"> -->
     <!-- <h1 class="text-xl font-semibold mb-4">Chats</h1> -->
-    <div class="h-screen flex bg-gray-100">
+    <div class="h-[100vh] flex bg-gray-100 mt-2 md:mt-4 px-0 md:px-4 md:py-4 sm:mt:12">
       <!-- Left: Chat list -->
     <ChatList
-      class="w-full md:w-1/3 border-r bg-white"
+    v-show="!activeChat || isDesktop"
+      class="w-full md:w-1/4 border-r bg-white md:h-[120vh] mt-12 md:mt-1 "
       @open-chat="openChat"
     />
     <!-- Right: Chat box -->
     <ChatBox
       v-if="activeChat"
-      class="hidden md:flex flex-1"
+      class=" w-full flex-1 mt-12 md:mt-1 md:h-[120vh]"
       :chat="activeChat"
+      @back="closeChat"
     />
 
      <!-- Mobile empty state -->
     <div
-      v-else
+      v-if="!activeChat"
       class="hidden md:flex flex-1 items-center justify-center text-gray-400"
     >
       Select a chat to start messaging
@@ -48,7 +50,7 @@ import { onMounted, watch } from 'vue';
 
 import { storeToRefs } from 'pinia';
 import { useRouter, useRoute } from 'vue-router';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import ChatList from './ChatList.vue';
 import ChatBox from './ChatBox.vue';
 import { useTestChatStore } from '../../stores/chatList';
@@ -56,10 +58,14 @@ const route = useRoute();
 const chatStore = useTestChatStore()
 const { chats , loading, error } = storeToRefs(chatStore)
 const activeChat = ref(null)
+const isDesktop = computed(() => window.innerWidth > 768)
 
 const openChat = (chat) => {
   activeChat.value = chat
 }
+const closeChat = () => {
+  activeChat.value = null;
+};
 // const openChatById = async (chatId) => {
 //   if(!chatId) return
 //   // const chat = chats.value.find(chat => chat.chat_id === chatId);
