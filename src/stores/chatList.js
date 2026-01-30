@@ -99,12 +99,17 @@ export const useTestChatStore = defineStore('testchats', {
         async fetchUnreadCounts() {
             try {
                 const unreadList = await getUnreadCountApi(); ///changes
+                console.log("fetching unread counts", unreadList);
+
                 unreadList.forEach(item => {
-                    const chat = this.chats.find(c => c.chat_id === item.chat_id);
+                    // console.log("id",item.chat_id)
+                    const chat = this.chats.find(c => c.id === item.chat_id);
+                    // console.log("chat id",chat)
+
                     if (chat) {
                         chat.unread_count = item.unread_count;
                     }
-
+                    // console.log("chatid",item.unread_count)
                 });
             } 
             catch (error) {
@@ -113,9 +118,10 @@ export const useTestChatStore = defineStore('testchats', {
 
         },
         async markAsReadApiStore(chat_id) {
+            console.log("marking chat as read", chat_id)
             try {
                 await markAsReadApi(chat_id);
-                const chat = this.chats.find(chat => chat.chat_id === chat_id);
+                const chat = this.chats.find(chat => chat.id === chat_id);
                 if (chat) {
                     chat.unread_count = 0;
                 }
@@ -135,6 +141,7 @@ export const useTestChatStore = defineStore('testchats', {
             }
         },
         async openChat(chat) {
+            console.log("open chat", chat)
             this.activeChatId = chat.chat_id;
             await this.markAsReadApiStore(chat.chat_id);
         },
