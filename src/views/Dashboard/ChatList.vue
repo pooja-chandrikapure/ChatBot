@@ -9,7 +9,7 @@
     <div class="flex-1 overflow-y-auto h-[120vh]">
       <div
         v-for="chat in chats"
-        :key="chat.chat_id"
+        :key="chat.id"
         @click= "onChatClick(chat)"
         class="flex items-center gap-3 p-3 sm:p-4 cursor-pointer hover:bg-gray-100 
         active:bg-gray-200 transition-colors duration-200 ease-in-out"
@@ -30,7 +30,7 @@
             </p>
             <!-- <div class="flex justify-between"> -->
             <p class="text-sm truncate text-gray-600">
-              {{ chat.creator_name }}
+              {{ getChatDisplayName(chat) }}
             </p>
             </div>
             <!-- <span class="">{{ chat.creator_name }}</span> -->
@@ -56,25 +56,68 @@
   </div>
 </template>
 <script setup>
-import { onMounted } from 'vue';
+import { onMounted, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useChatStore } from '../../stores/chat';
 import { useTestChatStore } from '../../stores/chatList';
+import { useAuthStore } from '../../stores/auth';
+
 
 const chatStore = useTestChatStore()
 const chatSocketStore = useChatStore();
 const { chats } = storeToRefs(chatStore)
+const authStore = useAuthStore()
+const myId = computed(() => Number(authStore.profile?.id))
 const emit = defineEmits(['open-chat'])
+const getChatDisplayName = (chat) => {
+  console.log('Chat:', chat);
+  console.log("vcbnmmb", myId.value)
+  return Number(chat.creator_id) === myId.value ? chat.user_name : chat.creator_name
+}
+const handleNewMessage = (message) => {
+  console.log('New message:', message);
+
+  const chat = chats.value.find(chat => chat.id === message.chat_id);
+
+  if (chat) {
+    chat.last_message = message.content;
+    chat.updated_at = message.created_at;
+
+    if(!chatSocketStore.currentChatId || chatSocketStore.currentChatId !== message.chat_id) {
+      chat.unread_count = (chat.unread_count || 0) + 1;
+    }
+    const index = chats.value.indexOf(chat);
+    if (index > 0){
+      chats.value.splice(index, 1);
+      chats.value.unshift(chat);
+    }
+  } else {
+    chatStore.fetchChats();
+  }
+};
 onMounted(async() => {
     await chatStore.fetchChats();
     await chatStore.fetchUnreadCounts();
+    if (chatSocketStore.socket) {
+      chatSocketStore.socket.on('message', handleNewMessage);
+    }
+    
     // await chatStore.getUnreadCountApiStore();
-})
+});
 
 const onChatClick = (chat) => {
+
   // chatStore.openChat(chat);
-  chatSocketStore.initChat({ chat_id: chat.chat_id, role: "user"});
-  chatStore.markAsReadApiStore(chat.chat_id);
+  console.log('adasrh',chat.id)
+  
+  // chatSocketStore.initChat({ chat_id: chat.id, role: "user"});
+
+  // chatSocketStore.markMessagesAsRead({ chat_id: chat.chat_id,
+  //   sender_id: chat.other_user_id,
+  //   receiver_id: chat.receiver_id
+  //  });
+  chatStore.markAsReadApiStore(chat.id);
+  chat.unread_count = 0;
   emit('open-chat', chat);
   // chatStore.markAsReadApiStore(chat.chat_id);
 }
