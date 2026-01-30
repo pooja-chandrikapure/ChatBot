@@ -3,6 +3,7 @@ import { signupApi, loginApi, sendOtpApi, verifyOtpApi, getProfileApi } from '..
 import socket from '../services/socket';
 // import Toast from '../components/toast.vue';
 import { useToastStore } from './toast';
+import { useChatStore } from './chat';
 
 // const toast = useToastStore();
 
@@ -129,15 +130,20 @@ export const useAuthStore = defineStore('auth', {
     },
     async fetchProfile() {
       try {
+        const socketStore = useChatStore()
         const res = await getProfileApi();
+        console.log(res.data.data.id)
+        // console.log(res.data.message)
         if(res.data.status === "success") {
           this.profile = res.data.data;
-          this.message = res .data.message;
-          
+          socketStore.profileId = res.data.data.id
+          // this.message = res.data.message;
+          console.log('Profile fetched successfully:', res.data.data, this.profile);
+          socketStore.startWebSocket()
         }
        
       } catch (err) {
-        this.error = err.response?.data?.message || 'Failed to fetch profile';
+        // this.error = err.response?.data?.message || 'Failed to fetch profile';
         console.error('Error fetching profile:', err);
       } finally {
         this.loading = false;
