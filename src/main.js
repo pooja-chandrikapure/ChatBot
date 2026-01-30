@@ -35,7 +35,8 @@ ModuleRegistry.registerModules([AllCommunityModule])
 const app = createApp(App)
 
 // 🔹 CONNECT SOCKET HERE (only once)
-socket.connect()
+// socket.connect();
+
 
 app
   .use(router)
