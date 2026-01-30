@@ -219,32 +219,39 @@ const columnDefs = ref([
         wrapper.className = 'flex items-center';
 
         const toggle = document.createElement('div');
+        const currentStatus = Number(params.value);
+        
+        // Set initial toggle appearance
         toggle.className = `
           w-11 h-6 rounded-full cursor-pointer transition-colors relative
-          ${Number(params.value) === 1 ? 'bg-blue-600' : 'bg-gray-300'}
+          ${currentStatus === 1 ? 'bg-blue-600' : 'bg-gray-300'}
         `;
 
-        const knob = document.createElement('div');
-        knob.className = `
-          absolute top-[2px] h-5 w-5 bg-white rounded-full transition-all
-          ${Number(params.data.status) === 1 ? 'left-[22px]' : 'left-[2px]'}
+        toggle.innerHTML = `
+          <div class="absolute top-[2px] h-5 w-5 bg-white rounded-full transition-all
+          ${currentStatus === 1 ? 'left-[22px]' : 'left-[2px]'}"></div>
         `;
-
-        toggle.appendChild(knob);
 
         toggle.onclick = async () => {
           const oldValue = Number(params.data.status);
           const newValue = oldValue === 1 ? 0 : 1;
 
-          // optimistic UI
-          params.node.setDataValue('status', newValue);
-
           try {
+            // Call API first
             await yourStrategy.toggleSatuts(params.data.id, newValue);
+            
+            // Update data after successful API call
+            params.node.setDataValue('status', newValue);
+            
+            // Force UI refresh
+            params.api.refreshCells({
+              rowNodes: [params.node],
+              columns: ['status'],
+              force: true
+            });
           } catch (err) {
-            console.error('status toggle failed', err);
-            // rollback
-            params.node.setDataValue('status', oldValue);
+            console.error('Status toggle failed', err);
+            // Don't update UI if API fails
           }
         };
 
