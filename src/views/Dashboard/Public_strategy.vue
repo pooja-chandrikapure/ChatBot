@@ -93,6 +93,7 @@ import { useRouter } from 'vue-router'
 
 import { publicStrategyStore } from '../../stores/public_strategy'
 import { useTestChatStore } from '../../stores/chatList'
+import { useChatStore } from '../../stores/chat'
 
 const router = useRouter()
 
@@ -101,6 +102,7 @@ const publicStrategy = publicStrategyStore()
 const { strategies, loading, error, pagination } = storeToRefs(publicStrategy)
 
 const chatStore = useTestChatStore()
+const socketStore = useChatStore()
 
 /* ---------------- Search (Debounced) ---------------- */
 const searchInput = ref('')
@@ -129,8 +131,9 @@ const loadingStrategyId = ref(null)
 
 const askQuestion = async (strategy) => {
   try {
-    loadingStrategyId.value = strategy.id
 
+    loadingStrategyId.value = strategy.id
+    // socketStore.startWebSocket()
     const chat = await publicStrategy.startChat(
       strategy.id,
       strategy.owner_id
@@ -140,8 +143,9 @@ const askQuestion = async (strategy) => {
 
     router.push({
       name: 'Chat',
-      params: { chatId: chat.chat_id },
+      params: { chatId: chat.id },
     })
+    // await chatStore.fetchMessages(chat.id, chatStore.)
   } catch (err) {
     console.error('Failed to start chat:', err)
   } finally {
