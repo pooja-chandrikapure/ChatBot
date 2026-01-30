@@ -1,5 +1,5 @@
 <template>
-  <div class="h-[100vh] sm:h-full flex flex-col md:h-[120vh] bg-gradient-to-br from-slate-50 to-blue-50">
+  <div class="min-h-screen sm:h-full flex flex-col md:h-[120vh] bg-gradient-to-br from-slate-50 to-blue-50">
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center h-screen">
       <div class="text-center">
@@ -26,8 +26,11 @@
           </h1> -->
           <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-6 md:p-8 shadow-lg mt-6 text-white transform hover:scale-[1.02] transition-transform duration-300">
             <h2 class="text-2xl md:text-3xl font-bold mb-3">
-              Welcome {{ profile.name }} Your Strategy Hub
+              Welcome {{ profile.name }} ! 
             </h2>
+            <p class="text-xl md:text-xl font-bold mb-3">
+              Your Strategy Hub
+            </p>
             <p class="text-lg font-semibold mb-2 text-blue-100">
               Build. Publish. Connect.
             </p>
