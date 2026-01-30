@@ -17,8 +17,8 @@
 
   <!-- Sidebar -->
   <aside
-    class="fixed md:static top-0 left-0 z-50 h-[100dvh] lg:h-[140vh] w-64 bg-gray-900 text-white flex flex-col
-           transform transition-transform duration-300 ease-in-out md:h-[full] sm:h-[full]
+    class="fixed md:static top-0 left-0 z-50 min-h-screen w-64 bg-gray-900 text-white flex flex-col
+           transform transition-transform duration-300 ease-in-out
            md:translate-x-0"
     :class="isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'"
   >
