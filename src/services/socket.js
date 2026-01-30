@@ -17,7 +17,10 @@ class SocketService {
       return;
     }
     // prevent duplicate connections
-    if (this.socket) return;
+    if (this.socket) {
+      this.socket.disconnect();
+      this.socket = null;
+    }
 
     this.socket = io("https://16qldnx9-5001.inc1.devtunnels.ms", {
       transports: ["websocket"],
@@ -34,9 +37,9 @@ class SocketService {
         console.log("Socket connected:", this.socket.id);
       });
 
-      this.socket.on('new_message' , (mes) => {
-        console.log('received new message' , mes)
-      })
+      // this.socket.on('test' , (mes) => {
+      //   console.log('received new message' , mes)
+      // })
       
 
       this.socket.on("connect_error", (err) => {
@@ -49,9 +52,10 @@ class SocketService {
       });
       
   }
-  emit(event, data){
-    this.socket?.emit(event, data);
-
+ emit(event, data) {
+    if (this.socket) {
+      this.socket.emit(event, data);
+    }
   }
 
   on(event, callback) {
@@ -80,11 +84,7 @@ class SocketService {
     }
   }
 
-  emit(event, data) {
-    if (this.socket) {
-      this.socket.emit(event, data);
-    }
-  }
+  
 
   // on(event, callback) {
   //   if (this.socket) {
