@@ -38,7 +38,10 @@ export const sendChatMessageApi = async (chat_id, payload) => {
 // MARK MESSAGES AS READ
 export const markAsReadApi = async (chat_id) => {
   try {
+    console.log("chat as read", chat_id)
+    console.log("calling", `/chat/${chat_id}/read`)
     const response = await api.put(`/chat/${chat_id}/read`);
+
     return response.data.data;
   } catch (error) {
     console.error('Mark as Read API Error:', error);
@@ -52,7 +55,9 @@ export const markAsReadApi = async (chat_id) => {
 export const getUnreadCountApi = async () => {
   try {
     const response = await api.get(`/chat/all-unread-counts`);
+    console.log("al_unread chat",response.data.data)
     return response.data.data;/////changes
+    
   } catch (error) {
     console.error('Unread Count API Error:', error);
     throw {
