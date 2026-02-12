@@ -1,17 +1,17 @@
 <template>
   <!-- <div class="p-4"> -->
     <!-- <h1 class="text-xl font-semibold mb-4">Chats</h1> -->
-    <div class="min-h-screen flex bg-gray-100  px-0  sm:mt:12">
+    <div class="min-h-screen flex bg-gray-100  px-0  sm:mt:12 pl-8">
       <!-- Left: Chat list -->
     <ChatList
     v-show="!activeChat || isDesktop"
-      class="flex w-full md:w-1/4 border-r bg-white min-h-screen mt-12 md:mt-1 "
+      class="flex w-full md:w-1/4 border-r bg-white min-h-screen mt-12  "
       @open-chat="openChat"
     />
     <!-- Right: Chat box -->
     <ChatBox
       v-if="activeChat"
-      class=" w-full flex-1 mt-12 md:mt-1 min-h-screen"
+      class=" w-full flex-1 mt-12  min-h-screen"
       :chat="activeChat"
       @back="closeChat"
     />
