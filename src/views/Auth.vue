@@ -105,11 +105,21 @@
               v-if="mode === 'signup'"
               type="button"
               @click="openOtpPopup"
-              :disabled="authStore.otpVerified"
+              :disabled="otpLoading || authStore.otpVerified"
               class="px-6 py-3 rounded-lg text-white text-sm font-medium transition-all duration-300 transform hover:scale-105 shadow-md"
               :class="authStore.otpVerified ? 'bg-green-500 hover:bg-green-600' : 'bg-gradient-to-r from-blue-500 to-gray-600 hover:shadow-lg'"
             >
-              {{ authStore.otpVerified ? '✓ Verified' : 'Send OTP' }}
+              <svg
+              v-if="otpLoading"
+              class="w-4 h-4 animate-spin"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+             </svg>
+
+             {{ otpLoading ? 'Sending...' : authStore.otpVerified ? '✓ Verified' : 'Send OTP' }}
             </button>
           </div>
         </div>
@@ -146,9 +156,32 @@
         <!-- BUTTON -->
         <button
           type="submit"
+          :disabled="submitLoading"
           class="w-full bg-gradient-to-r from-blue-500 to-gray-600 text-white py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-gray-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl mt-6"
-        >
-          {{ mode === 'login' ? 'Login Now' : 'Create Account' }}
+          :class="submitLoading
+          ? 'opacity-70 cursor-not-allowed'
+          : 'hover:from-blue-600 hover:to-gray-700 hover:scale-105'"
+          >
+          <svg
+            v-if="submitLoading"
+            class="w-5 h-5 animate-spin"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+          </svg>
+
+          <span>
+            {{ submitLoading
+              ? mode === 'login'
+                ? 'Logging in...'
+                : 'Creating...'
+              : mode === 'login'
+                ? 'Login Now'
+                : 'Create Account'
+            }}
+          </span>
         </button>
       </form>
 
@@ -187,6 +220,8 @@ const mode = ref('login')
 const showOtpModal = ref(false)
 const showPassword = ref(false)
 const toast = useToastStore()
+const submitLoading = ref(false)
+const otpLoading = ref(false)
 
 const form = reactive({
   name: '',
@@ -215,8 +250,10 @@ const openOtpPopup = async () => {
   } 
    
   try {
+    otpLoading.value = true
     await authStore.sendOtp(form.email)
     toast.success('OTP sent to your email')
+    showOtpModal.value = true
     console.log('OTP sent to:', form.email)
     console.log('jbhg', authStore.sendOtp)
     alert('OTP sent to your email')
@@ -225,8 +262,10 @@ const openOtpPopup = async () => {
     // toast.error(error.message ||'Failed to send OTP. Please try again' )
     // alert(error.message || 'Failed to send OTP')
     return
+  } finally {
+    otpLoading.value = false
   }
-  showOtpModal.value = true
+  
 }
 
 const handleVerifyOtp = async (otp) => {
@@ -250,6 +289,8 @@ const handleResendOtp = async () => {
 }
 
 const handleSubmit = async () => {
+  if (submitLoading.value) return
+  submitLoading.value = true
   try {
     if (!form.email || !form.password) {
       // alert('Email and password are required')
@@ -317,6 +358,8 @@ const handleSubmit = async () => {
     }
   } catch (error) {
     alert(error.message || 'Something went wrong')
+  } finally {
+    submitLoading.value = false
   }
 }
 </script>
