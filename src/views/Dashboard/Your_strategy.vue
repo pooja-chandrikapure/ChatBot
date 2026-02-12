@@ -1,5 +1,5 @@
 <template>
-  <div class="pt-14 md:pt-0 w-full px-4 sm:px-6 lg:px-8">
+  <div class="pt-14 md:pt-0 w-full px-4 sm:px-6 lg:px-8 lg:pl-10">
     <h1 class="text-xl md:text-2xl font-semibold bg-[#111827] text-white p-2 rounded-md">
       Strategy Page
     </h1>
@@ -28,12 +28,13 @@
     <div class="overflow-x-auto bg-white mt-4 rounded-lg shadow  ">
       <div class="min-w-[700px] ">
         <ag-grid-vue
-          class="ag-theme-alpine customize-table md:h-[150vh] h-[300px]"
+          class="ag-theme-alpine customize-table"
           :style="gridStyle"
           :rowData="rowData"
           :columnDefs="columnDefs"
           :defaultColDef="defaultColDef"
           :pagination="true"
+          :getRowId="getRowId"
           :paginationPageSize="10"
           @grid-ready="onGridReady"
         />
@@ -105,12 +106,22 @@ const mode = ref('add'); //add|edit
 const selectedStrategy = ref(null);
 const searchText = ref('');
 const gridApi = ref(null);
+const getRowId = params => {
+  // Use backend id if available
+  if (params?.data?.id !== undefined && params?.data?.id !== null) {
+    return params.data.id.toString(); // convert to string for safety
+  }
+  // fallback (should avoid if possible)
+  return 'row-' + Math.random().toString(36).substr(2, 9);
+};
+
 
 const isMobile = window.innerWidth < 768;
 
 // Computed grid style for responsive height
 const gridStyle = computed(() => ({
   height: isMobile ? '350px' : '400px',
+  height: 'calc(110vh - 300px)',
   width: '100%'
 }));
 
@@ -126,20 +137,33 @@ const closePlaceOrderModal = () => {
 
 const editStrategy = (row) => {
     mode.value = 'edit';
-    selectedStrategy.value = { ...row};
+     // Find the latest data from rowData using row id
+    const latestRow = rowData.value.find(r => r.id === row.id);
+
+    if (!latestRow) {
+        console.error("Row not found in latest data", row);
+        return;
+    }
+    selectedStrategy.value = JSON.parse(JSON.stringify(latestRow));
     showOtpModal.value = true;
 };
 
 const handleSubmit = async (formData) => {
     try {
         if(mode.value === "add") {
-            await yourStrategy.createStrategy(formData);
+          await yourStrategy.createStrategy(formData);
+      
         } else {
-            await yourStrategy.updateStrategy(selectedStrategy.value.id, formData);
+        await yourStrategy.updateStrategy(
+        selectedStrategy.value.id,
+        formData
+      );     
+        
         }
 
         showOtpModal.value = false;
         await fetchStrategyData();
+        gridApi.value.refreshCells();
     } catch (err) {
         console.error("Save failed", err);
     }
@@ -163,144 +187,147 @@ const confirmDelete = async () => {
   try {
     await yourStrategy.deleteStrategyStoreApi(deleteTarget.value.id);
 
-    // remove row from grid
-    rowData.value = rowData.value.filter(
-      (item) => item.id !== deleteTarget.value.id
-    );
+    gridApi.value.applyTransaction({
+      remove: [deleteTarget.value]
+    });
 
     cancelDelete();
   } catch (err) {
     console.error('Delete failed', err);
   }
 };
+const statusRenderer = (params) => {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'flex items-center p-1';
+
+  const toggle = document.createElement('div');
+
+  const setUI = (value) => {
+    toggle.className = `
+      w-11 h-6 rounded-full cursor-pointer transition-colors relative 
+      ${value === 1 ? 'bg-blue-600' : 'bg-gray-300'}
+    `;
+
+    toggle.innerHTML = `
+      <div class="absolute top-[2px] h-5 w-5 bg-white rounded-full transition-all
+      ${value === 1 ? 'left-[22px]' : 'left-[2px]'}"></div>
+    `;
+  };
+
+  setUI(Number(params.value));
+
+  toggle.onclick = async () => {
+    const oldValue = Number(params.data.status);
+    const newValue = oldValue === 1 ? 0 : 1;
+
+    try {
+      await yourStrategy.toggleSatuts(params.data.id, newValue)
+
+      params.node.setDataValue('status', newValue);
+      setUI(newValue);
+    } catch (err) {
+      console.error('Status toggle failed', err);
+      setUI(oldValue);
+    }
+  };
+
+  wrapper.appendChild(toggle);
+  return wrapper;
+};
+
+const publishedRenderer = (params) => {
+  const button = document.createElement('button');
+
+  const setUI = (value) => {
+    button.textContent = value === 1 ? 'Published' : 'Unpublished';
+    button.className = `
+      px-3 py-1 text-sm rounded
+      ${value === 1
+        ? 'bg-blue-600 text-white cursor-default'
+        : 'bg-gray-400 text-black hover:bg-gray-500'}
+    `;
+  };
+
+  setUI(Number(params.value));
+
+  button.onclick = async () => {
+    const oldValue = Number(params.data.published);
+    const newValue = oldValue === 1 ? 0 : 1;
+
+    try {
+      await yourStrategy.togglePublish(params.data.id, newValue);
+
+      params.node.setDataValue('published', newValue);
+      setUI(newValue);
+    } catch (err) {
+      console.error('Publish toggle failed', err);
+      setUI(oldValue);
+    }
+  };
+
+  return button;
+};
+
 
 const columnDefs = ref([
-    {
-        headerName: 'ID', 
+  {
+    headerName: 'ID', 
         field: 'id', 
-        maxWidth: 80,  
+        maxWidth: 100,  
         sortable: true, 
         filter: true,
         suppressMenu: true, 
         suppressMovable: true,
-    },
+  },
     { 
         headerName: 'Name', 
         field: 'name', 
-        maxWidth: 180,
+        maxWidth: 190,
         sortable: true, 
         filter: true,
-        suppressMenu: true, 
+        suppressHeaderMenuButton: true, 
         suppressMovable: true, 
     },
     { 
         headerName: 'Description', 
-        field: 'description', 
+        field: 'description',
+        maxWidth: 190, 
         sortable: true, 
         filter: true,
-        suppressMenu: true, 
+        suppressHeaderMenuButton: true, 
         suppressMovable: true, 
     },
     { 
         headerName: 'Capital Required', 
         field: 'capital_required', 
+        // pinned: 'center',
+        maxWidth: 190,
         sortable: true, 
         filter: true,
-        suppressMenu: true, 
+        suppressHeaderMenuButton: true,
         suppressMovable: true, 
     },
     {
-      headerName: 'Status',
-      field: 'status',
-      suppressMenu: true,
-      suppressMovable: true,
-      cellRenderer: (params) => {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'flex items-center';
-
-        const toggle = document.createElement('div');
-        const currentStatus = Number(params.value);
-        
-        // Set initial toggle appearance
-        toggle.className = `
-          w-11 h-6 rounded-full cursor-pointer transition-colors relative
-          ${currentStatus === 1 ? 'bg-blue-600' : 'bg-gray-300'}
-        `;
-
-        toggle.innerHTML = `
-          <div class="absolute top-[2px] h-5 w-5 bg-white rounded-full transition-all
-          ${currentStatus === 1 ? 'left-[22px]' : 'left-[2px]'}"></div>
-        `;
-
-        toggle.onclick = async () => {
-          const oldValue = Number(params.data.status);
-          const newValue = oldValue === 1 ? 0 : 1;
-
-          try {
-            // Call API first
-            await yourStrategy.toggleSatuts(params.data.id, newValue);
-            
-            // Update data after successful API call
-            params.node.setDataValue('status', newValue);
-            
-            // Force UI refresh
-            params.api.refreshCells({
-              rowNodes: [params.node],
-              columns: ['status'],
-              force: true
-            });
-          } catch (err) {
-            console.error('Status toggle failed', err);
-            // Don't update UI if API fails
-          }
-        };
-
-        wrapper.appendChild(toggle);
-        return wrapper;
-      }
-    },
-    { 
-        headerName: 'Published', 
-        field: 'published', 
-        suppressMenu: true, 
-        suppressMovable: true, 
-        cellStyle: { padding: '1' },
-        cellRenderer: (params) => {
-          const button = document.createElement('button')
-          const setButtonState = (value) => {
-            button.textContent = value === 1 ? 'Published' : 'Unpublished';
-            button.className = `
-            px-3 py-1 text-sm rounded
-            ${value === 1
-              ? 'bg-blue-600 text-white cursor-default' 
-              : 'bg-gray-400 text-black hover:bg-gray-500'}`;
-          };
-
-          // initial state
-          setButtonState(params.data.published);
-
-          button.onclick = async () => {
-            const oldValue = Number(params.data.published);
-            const newValue = oldValue === 1 ? 0 : 1;
-
-            // optimistic UI
-            params.node.setDataValue('published', newValue);
-            setButtonState(newValue);
-
-            try {
-              await yourStrategy.togglePublish(params.data.id, newValue);
-            } catch (err) {
-              console.error('Publish toggle failed', err);
-              // rollback
-              params.node.setDataValue('published', oldValue);
-              setButtonState(oldValue);
-            }
-          };
-          return button;
-        }
-    },
-    { 
+  headerName: 'Status',
+  field: 'status',
+  minWidth: 150,
+  maxWidth: 200,
+  suppressHeaderMenuButton: true,
+  suppressMovable: true,
+  cellRenderer: statusRenderer,
+},
+  {
+    headerName: 'Published',
+    field: 'published',
+    maxWidth: 250,
+    suppressMenu: true,
+    suppressMovable: true,
+    cellStyle: { padding: '1' },
+  cellRenderer: publishedRenderer,
+  },
+   {
         headerName: 'Actions', 
+        // pinned: 'right',
         field: 'Actions', 
         sortable: false, 
         filter: false, 
@@ -309,7 +336,7 @@ const columnDefs = ref([
         suppressMovable: true,
         cellRenderer: (params) => {
           const container = document.createElement('div')
-          container.className = 'flex gap-2'
+          container.className = 'flex gap-2 p-1'
 
           const editBtn = document.createElement('button')
           editBtn.innerText = 'Edit'
@@ -341,11 +368,17 @@ onMounted(() => {
     fetchStrategyData();
 });
 
+
+
+
 async function fetchStrategyData() {
     try {
         const res = await yourStrategy.fetchStrategies();
         console.log('Fetched strategy data:', res);
-        rowData.value = res;
+        rowData.value = res.map(item => ({
+            ...item,
+            id: item.id ?? Math.random().toString(36).substr(2, 9) 
+        }));
         console.log('Row data set to:', rowData.value);
     } catch (error) {
         console.error('Error fetching strategy data:', error);
