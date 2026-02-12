@@ -68,9 +68,33 @@
           @click="submitStrategy"
           class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
         >
-        {{ mode === 'add' ? 'Add' : 'Save' }}
+        <svg
+        v-if="loading"
+        class="animate-spin h-4 w-4 text-white"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <circle
+          class="opacity-25"
+          cx="12"
+          cy="12"
+          r="10"
+          stroke="currentColor"
+          stroke-width="4"
+        ></circle>
+        <path
+          class="opacity-75"
+          fill="currentColor"
+          d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+        ></path>
+      </svg>
+
+      <span>
+        {{ loading ? (mode === 'add' ? 'Adding...' : 'Saving...') : (mode === 'add' ? 'Add' : 'Save') }}
+      </span>
         
-        </button>
+    </button>
     </div>
     </div>
     </div>
@@ -84,6 +108,7 @@ import { getYourStrategy } from '../../stores/your_strategy';
 
 const your_strategy = getYourStrategy();
 const yourStrategy = getYourStrategy();
+const loading = ref(false);
 // const mode = ref('add'); //add|edit;
 const selectedStrategy = ref(null);
 const toggleStatus = () => {
@@ -129,21 +154,23 @@ watch(
   (val) => {
     console.log("edit data", val)
     if (val && props.mode === 'edit') {
-      form.value = {
-        name: val.name ?? '',
-        description: val.description ?? '',
-        capital_required: val.capital_required ?? '',
-        status: val.status ?? 1,
-        published: val.published ?? 0,
-      };
-    } if(props.mode === 'add') {
+      form.value = JSON.parse(JSON.stringify(val));
+    } else if(props.mode === 'add') {
       resetForm();
     }
   },
   { immediate: true }
 );
-const submitStrategy = () => {
-  emit('submit', { ...form.value });
+const submitStrategy = async () => {
+  if (loading.value) return;
+  loading.value = true;
+  try {
+    await emit('submit', { ...form.value });
+  } catch (error) {
+    console.error('Submit failed:', error);
+  } finally {
+    loading.value = false;
+  }
 };
 const close = () => {
     emit("close");
