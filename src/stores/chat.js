@@ -113,9 +113,27 @@ export const useChatStore = defineStore("chat", {
           } 
           else {
           // Chat is not active → increment unread
+          // Inactive chat → update unread + last message
           let chat = chatListStore.chats.find(c => c.id == data.chat_id);
-          console.log('unreadcount increment' , chat)
-          chat.unread_count = (chat.unread_count || 0) + 1;
+
+          if (chat) {
+            chat.unread_count = (chat.unread_count || 0) + 1;
+            chat.last_message = data.content;
+            chat.last_message_at = data.created_at;
+            chat.sender_name = data.sender_name;
+          } else {
+            // fallback: if chat does not exist in list
+            chatListStore.chats.unshift({
+              id: data.chat_id,
+              last_message: data.content,
+              unread_count: 1,
+              last_message_at: data.created_at,
+              sender_name: data.sender_name
+            });
+          }
+
+          // force reactivity
+          chatListStore.chats = [...chatListStore.chats];
         }
       });
       socket.on("messages_read", (data) => {
